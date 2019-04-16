@@ -33,8 +33,9 @@ public class Lexer {
                 tokenizeOperator(currChar);
                 currChar = nextChar();
             } else if (Character.isDigit(currChar)) {
-                tokenizeNumber(currChar);
-                currChar = nextChar();
+//                Метод tokenizeNumber после добавления всего числа в токе, вызывает nextChar() ещё раз.
+//                  => после этого метода не требуется вызов следующего символа, его может вернуть tokenizeNumber()
+                currChar = tokenizeNumber(currChar);
             } else {
                 currChar = nextChar();
             }
@@ -42,13 +43,14 @@ public class Lexer {
         return tokens;
     }
 
-    private void tokenizeNumber(char currToken) {
+    private char tokenizeNumber(char currToken) {
         StringBuilder buffer = new StringBuilder();
         while(Character.isDigit(currToken)) {
             buffer.append(currToken);
             currToken = nextChar();
         }
         addToken(TokenType.NUMBER, buffer.toString());
+        return currToken;
     }
 
     private void tokenizeOperator(char currToken) {

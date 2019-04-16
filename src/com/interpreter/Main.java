@@ -8,7 +8,8 @@ import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        String input = "(2 + 2)) * 2";
+//        Пофиксил. См. метод tokenize()
+        String input = "(2 + 2) * 2";
         Lexer lexer = new Lexer(input);
         /*for (Token token : lexer.tokenize()) {
             System.out.println(token);
