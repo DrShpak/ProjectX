@@ -6,16 +6,21 @@ import com.interpreter.token.TokenType;
 import java.util.ArrayList;
 
 public class Lexer {
+    private static final String ERROR_WRONG_NUMBER = "После числа должен следовать пробел.";
 
     private String input;
     private int length;
     private int currPos = 0;
 
-    private final String TOKENS_CHAR = "+-*/()";
+    private final String WORDS_PATTERN = "^[_A-Za-z][_A-Za-z1-9]*$";
+    private final String END_CHAR = " 0\n\r\t";
+    private final String TOKENS_CHAR = "+-*/()=";
     private TokenType[] tokenTypes = {
       TokenType.PLUS, TokenType.MINUS,
       TokenType.MULTIPLY, TokenType.DIVISION,
-      TokenType.OPEN_BRACKET, TokenType.CLOSE_BRACKET
+      TokenType.OPEN_BRACKET, TokenType.CLOSE_BRACKET,
+            TokenType.EQUAL,
+            TokenType.WORD
     };
 
     private ArrayList<Token> tokens;
@@ -36,11 +41,33 @@ public class Lexer {
 //                Метод tokenizeNumber после добавления всего числа в токе, вызывает nextChar() ещё раз.
 //                  => после этого метода не требуется вызов следующего символа, его может вернуть tokenizeNumber()
                 currChar = tokenizeNumber(currChar);
-            } else {
-                currChar = nextChar();
+            }
+            else {
+                currChar = tokenizeWord(currChar);
             }
         }
         return tokens;
+    }
+
+    /**
+     * Метод добавляет токен типа "слово", если символ, с которого оно начинается,
+     * удовлетворяет шаблону слова. По окончании цикла, из буфера "Word" удаляется последний символ,
+     * который к слову уже не относится. Этот же символ остаётся в currChar, который и возвращает метод.
+     *
+     * @param currChar - символ, с которого начинается слово.
+     * @return - следующий за словом символ.
+     */
+    private char tokenizeWord(char currChar) {
+        StringBuilder word = new StringBuilder();
+        do{
+            word.append(currChar);
+            currChar = nextChar();
+        }while (word.toString().matches(WORDS_PATTERN));
+
+        word.deleteCharAt(word.length()-1);
+        if (word.length() > 0)
+            addToken(TokenType.WORD, word.toString());
+        return currChar;
     }
 
     private char tokenizeNumber(char currToken) {
@@ -49,6 +76,11 @@ public class Lexer {
             buffer.append(currToken);
             currToken = nextChar();
         }
+//          Если после числа не пробел и не специальный символ, исключение.
+//          currToken будет равен 0(\0), если это пустой (null) символ. Такое произойдёт,
+//          например, когда данное число - последней символ в коде на нашем языке.
+        if (currToken != ' ' && TOKENS_CHAR.indexOf(currToken) == -1 && END_CHAR.indexOf(currToken) == -1)
+            throw new RuntimeException(ERROR_WRONG_NUMBER + " (" + buffer + currToken + ')');
         addToken(TokenType.NUMBER, buffer.toString());
         return currToken;
     }

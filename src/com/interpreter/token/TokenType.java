@@ -5,11 +5,11 @@ public enum TokenType {
     MINUS,
     MULTIPLY,
     DIVISION,
-
+    EQUAL,
     EOF,
 
     NUMBER,
-
+    WORD,
     OPEN_BRACKET,
     CLOSE_BRACKET
 }

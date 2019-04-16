@@ -11,7 +11,7 @@ public class UnaryExpression implements Expression {
     }
 
     @Override
-    public double calculate() throws Exception {
+    public double calculate(){
         switch (operation) {
             case '-':
                 return -exp1.calculate();

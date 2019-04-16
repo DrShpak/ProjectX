@@ -12,7 +12,7 @@ public class BinaryExpression implements Expression {
     }
 
     @Override
-    public double calculate() throws Exception {
+    public double calculate() {
         switch (operation) {
             case '+':
                 return exp1.calculate() + exp2.calculate();
@@ -23,7 +23,7 @@ public class BinaryExpression implements Expression {
             case '/':
                 return exp1.calculate() / exp2.calculate();
             default:
-                throw new Exception("Неизвестная операция");
+                throw new RuntimeException("Неизвестная операция");
         }
     }
 

@@ -1,9 +1,7 @@
 package com.interpreter.parser;
 
-import com.interpreter.parser.ast.BinaryExpression;
-import com.interpreter.parser.ast.Expression;
-import com.interpreter.parser.ast.NumberExpression;
-import com.interpreter.parser.ast.UnaryExpression;
+import com.interpreter.parser.ast.*;
+import com.interpreter.parser.variables.Variables;
 import com.interpreter.token.Token;
 import com.interpreter.token.TokenType;
 
@@ -19,12 +17,33 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    public ArrayList<Expression> parse() {
-        ArrayList<Expression> result = new ArrayList<>();
+    public ArrayList<Statement> parse() {
+        ArrayList<Statement> result = new ArrayList<>();
         while (!match(TokenType.EOF)) {
-            result.add(expression());
+            result.add(statement());
         }
         return result;
+    }
+
+    private Statement statement() {
+        return assignmentStatement();
+    }
+    /**
+     *  Метод определения операторов по токенам и рассчёта значения соотвествующих операндов.
+     *  Созданный оператор сразу "извлекается", помещая переменную в базу данных.
+     *  Если набор токенов не соответсвует ни одному оператору, исключение.
+     *
+     * @return оператор, включающий в себя результат своей работы.
+     */
+    private Statement assignmentStatement() {
+        Token firstOperand = getCurrToken();
+        currPos++;
+        if (firstOperand.getType() == TokenType.WORD && match(TokenType.EQUAL)){
+            Statement asgStatement = new AssignmentStatement(firstOperand.getData(), expression().calculate());
+            asgStatement.execute();
+            return asgStatement;
+        }
+        throw new RuntimeException("Unknown statement");
     }
 
     private Expression expression() {
@@ -87,10 +106,10 @@ public class Parser {
         }
         /*if (match(TokenType.HEX_NUMBER)) {
             return new NumberExpression(Long.parseLong(current.getData(), 16));
-        }
-        if (match(TokenType.WORD)) {
-            return new VariabletExpression(current.getData());
         }*/
+        if (match(TokenType.WORD)) {
+            return new VariableExpression(Variables.getValue(current.getData()));
+        }
         if (match(TokenType.OPEN_BRACKET)) {
             Expression result = expression();
             match(TokenType.CLOSE_BRACKET);
