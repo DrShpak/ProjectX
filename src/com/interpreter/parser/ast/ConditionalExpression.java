@@ -2,10 +2,16 @@ package com.interpreter.parser.ast;
 
 public class ConditionalExpression implements Expression {
 
-    private char operation;
+    private String operation;
     private Expression exp1, exp2;
 
     public ConditionalExpression(char operation, Expression exp1, Expression exp2) {
+//        this.operation = operation;
+        this.exp1 = exp1;
+        this.exp2 = exp2;
+    }
+
+    public ConditionalExpression(String operation, Expression exp1, Expression exp2) {
         this.operation = operation;
         this.exp1 = exp1;
         this.exp2 = exp2;
@@ -14,12 +20,18 @@ public class ConditionalExpression implements Expression {
     @Override
     public double calculate() {
         switch (operation) {
-            case '<':
+            case "<":
                 return exp1.calculate() < exp2.calculate() ? 1 : 0;
-            case '>':
+            case ">":
                 return exp1.calculate() >  exp2.calculate() ? 1 : 0;
-            case '=':
+            case "==":
                 return exp1.calculate() == exp2.calculate() ? 1 : 0;
+            case "<=":
+                return exp1.calculate() <= exp2.calculate() ? 1 : 0;
+            case ">=":
+                return exp1.calculate() >= exp2.calculate() ? 1 : 0;
+            case "!=":
+                return exp1.calculate() != exp2.calculate() ? 1 : 0;
             default:
                 throw new RuntimeException("Неизвестная операция");
         }

@@ -6,8 +6,12 @@ public enum TokenType {
     MULTIPLY,
     DIVISION,
     EQUAL,
-    LT,
-    GT,
+    ASSIGMENT_OPERATOR,
+    LT, // <
+    GT, // >
+    LE, // <=
+    GE, // >=
+    NE, // NotEqual !=
     EOF,
 
     NUMBER,

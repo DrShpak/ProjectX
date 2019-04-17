@@ -32,12 +32,12 @@ public class Parser {
     }
 
     /**
-     *  Метод определения условного оператора.
-     *  Сначала рассчитывается выражение условия, затем создаётся тело if,
-     *  после, если за телом if следует токен типа "ELSE", формируется тело блока else,
-     *  иначе ему присваевается null и оно исполняться не будет.
-     *  P.S. что-то упустил момент, где и когда правильно "извлекать" результат работы операторов,
-     *      поэтому делаю сразу после их создания.
+     * Метод определения условного оператора.
+     * Сначала рассчитывается выражение условия, затем создаётся тело if,
+     * после, если за телом if следует токен типа "ELSE", формируется тело блока else,
+     * иначе ему присваевается null и оно исполняться не будет.
+     * P.S. что-то упустил момент, где и когда правильно "извлекать" результат работы операторов,
+     * поэтому делаю сразу после их создания.
      *
      * @return оператор, включающий в себя результат своей работы.
      */
@@ -51,16 +51,16 @@ public class Parser {
     }
 
     /**
-     *  Метод определения оператора присваивания.
-     *  Созданный оператор сразу "извлекается", помещая переменную в базу данных.
-     *  Если набор токенов не соответсвует оператору, исключение.
+     * Метод определения оператора присваивания.
+     * Созданный оператор сразу "извлекается", помещая переменную в базу данных.
+     * Если набор токенов не соответсвует оператору, исключение.
      *
      * @return оператор, включающий в себя результат своей работы.
      */
     private Statement assignmentStatement() {
         Token firstOperand = getCurrToken();
         currPos++;
-        if (firstOperand.getType() == TokenType.WORD && match(TokenType.EQUAL)){
+        if (firstOperand.getType() == TokenType.WORD && match(TokenType.ASSIGMENT_OPERATOR)) {
             Statement asgStatement = new AssignmentStatement(firstOperand.getData(), expression());
             asgStatement.execute();
             return asgStatement;
@@ -82,16 +82,30 @@ public class Parser {
         Expression result = additive();
 
         while (true) {
+
+//            switch (TokenType)
             if (match(TokenType.EQUAL)) {
-                result = new ConditionalExpression('=', result, multiplicative());
+                result = new ConditionalExpression("==", result, multiplicative());
                 continue;
             }
             if (match(TokenType.LT)) {
-                result = new ConditionalExpression('<', result, multiplicative());
+                result = new ConditionalExpression("<", result, multiplicative());
                 continue;
             }
             if (match(TokenType.GT)) {
-                result = new ConditionalExpression('>', result, multiplicative());
+                result = new ConditionalExpression(">", result, multiplicative());
+                continue;
+            }
+            if (match(TokenType.LE)) {
+                result = new ConditionalExpression(">=", result, multiplicative());
+                continue;
+            }
+            if (match(TokenType.GE)) {
+                result = new ConditionalExpression(">=", result, multiplicative());
+                continue;
+            }
+            if (match(TokenType.NE)) {
+                result = new ConditionalExpression("!=", result, multiplicative());
                 continue;
             }
             break;
@@ -133,7 +147,6 @@ public class Parser {
             }
             break;
         }
-
         return result;
     }
 
@@ -165,6 +178,7 @@ public class Parser {
             match(TokenType.CLOSE_BRACKET);
             return result;
         }
+        System.out.println("ПЛОХОЙ ТОКЕН = " + current + " position " + currPos) ;
         throw new RuntimeException("Unknown expression");
     }
 
@@ -175,6 +189,11 @@ public class Parser {
         return current;
     }
 
+    /**
+     * метод для взятия текущего токена
+     * в случае, если вышли за границы списка токенов - выбрасывается исключение
+     * @return текущий токен
+     */
     private Token getCurrToken() {
         if (currPos >= tokens.size())
             return EOF;
@@ -186,7 +205,6 @@ public class Parser {
         if (type != currToken.getType()) {
             return false;
         }
-
         currPos++;
         return true;
     }

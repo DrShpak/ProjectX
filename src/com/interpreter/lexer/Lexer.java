@@ -12,14 +12,14 @@ public class Lexer {
     private int length;
     private int currPos = 0;
 
-    private final String WORDS_PATTERN = "^[_A-Za-z][_A-Za-z1-9]*$";
-    private final String END_CHAR = " \0\n\r\t";
+    private final String WORDS_PATTERN = "^[_A-Za-z][_A-Za-z0-9]*$";
+        private final String END_CHAR = " \0\n\r\t";
     private final String TOKENS_CHAR = "+-*/()=<>";
     private TokenType[] tokenTypes = {
-      TokenType.PLUS, TokenType.MINUS,
-      TokenType.MULTIPLY, TokenType.DIVISION,
-      TokenType.OPEN_BRACKET, TokenType.CLOSE_BRACKET,
-      TokenType.EQUAL, TokenType.LT, TokenType.GT
+            TokenType.PLUS, TokenType.MINUS,
+            TokenType.MULTIPLY, TokenType.DIVISION,
+            TokenType.OPEN_BRACKET, TokenType.CLOSE_BRACKET,
+            TokenType.ASSIGMENT_OPERATOR, TokenType.LT, TokenType.GT
     };
 
     private ArrayList<Token> tokens;
@@ -37,12 +37,11 @@ public class Lexer {
                 tokenizeOperator(currChar);
                 currChar = nextChar();
             } else if (Character.isDigit(currChar)) {
-//                Метод tokenizeNumber после добавления всего числа в токе, вызывает nextChar() ещё раз.
-//                  => после этого метода не требуется вызов следующего символа, его может вернуть tokenizeNumber()
-                currChar = tokenizeNumber(currChar);
-            }
-            else {
-                currChar = tokenizeWord(currChar);
+                tokenizeNumber(currChar);
+                currChar = getCurrChar();
+            } else {
+                tokenizeWord(currChar);
+                currChar = getCurrChar();
             }
         }
         return tokens;
@@ -57,43 +56,62 @@ public class Lexer {
      * @param currChar - символ, с которого начинается слово.
      * @return - следующий за словом символ.
      */
-    private char tokenizeWord(char currChar) {
+    private void tokenizeWord(char currChar) {
         StringBuilder word = new StringBuilder();
-        do{
+        do {
             word.append(currChar);
             currChar = nextChar();
-        }while (word.toString().matches(WORDS_PATTERN));
+        } while (word.toString().matches(WORDS_PATTERN));
 
-        word.deleteCharAt(word.length()-1);
+        word.deleteCharAt(word.length() - 1);
         if (word.toString().equals("if"))
             addToken(TokenType.IF);
         else if (word.toString().equals("else"))
             addToken(TokenType.ELSE);
         else if (word.length() > 0)
             addToken(TokenType.WORD, word.toString());
-        return currChar;
     }
 
-    private char tokenizeNumber(char currToken) {
+    private void tokenizeNumber(char currChar) {
         StringBuilder buffer = new StringBuilder();
-        while(Character.isDigit(currToken)) {
-            buffer.append(currToken);
-            currToken = nextChar();
+        while (Character.isDigit(currChar)) {
+            buffer.append(currChar);
+            currChar = nextChar();
         }
-//          Если после числа не пробел и не специальный символ, исключение.
-//          currToken будет равен 0(\0), если это пустой (null) символ. Такое произойдёт,
-//          например, когда данное число - последней символ в коде на нашем языке.
-        if (currToken != ' ' && TOKENS_CHAR.indexOf(currToken) == -1 && END_CHAR.indexOf(currToken) == -1)
-            throw new RuntimeException(ERROR_WRONG_NUMBER + " (" + buffer + currToken + ')');
+//        Если после числа не пробел и не специальный символ, исключение.
+//        currChar будет равен 0(\0), если это пустой (null) символ. Такое произойдёт,
+//        например, когда данное число - последней символ в коде на нашем языке.
+        if (currChar != ' ' && TOKENS_CHAR.indexOf(currChar) == -1 && END_CHAR.indexOf(currChar) == -1)
+            throw new RuntimeException(ERROR_WRONG_NUMBER + " (" + buffer + currChar + ")");
         addToken(TokenType.NUMBER, buffer.toString());
-        return currToken;
     }
 
-    private void tokenizeOperator(char currToken) {
-        addToken(tokenTypes[TOKENS_CHAR.indexOf(currToken)]);
-//        nextChar();
+    private void tokenizeOperator(char currChar) {
+        if (currChar == '=' && nextChar() == '=') {
+            currPos++;
+            addToken(TokenType.EQUAL);
+            return;
+        }
+
+        if (currChar == '<' && nextChar() == '=') {
+            currPos++;
+            addToken(TokenType.LE);
+            return;
+        }
+
+        if (currChar == '>' && nextChar() == '=') {
+            currPos++;
+            addToken(TokenType.GE);
+            return;
+        }
+        addToken(tokenTypes[TOKENS_CHAR.indexOf(currChar)]);
     }
 
+    /**
+     * взятие текущего символа
+     *
+     * @return текущий символ
+     */
     private char getCurrChar() {
         if (currPos >= length)
             return '\0';

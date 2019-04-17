@@ -1,6 +1,6 @@
 package com.interpreter.parser.ast;
 
-public class IfStatement implements Statement{
+public class IfStatement implements Statement {
 
     private Expression conditional;
     private Statement ifStatement, elseStatement;
