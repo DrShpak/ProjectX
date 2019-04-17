@@ -26,12 +26,34 @@ public class Parser {
     }
 
     private Statement statement() {
+        if (match(TokenType.IF))
+            return ifElse();
         return assignmentStatement();
     }
+
     /**
-     *  Метод определения операторов по токенам и рассчёта значения соотвествующих операндов.
+     *  Метод определения условного оператора.
+     *  Сначала рассчитывается выражение условия, затем создаётся тело if,
+     *  после, если за телом if следует токен типа "ELSE", формируется тело блока else,
+     *  иначе ему присваевается null и оно исполняться не будет.
+     *  P.S. что-то упустил момент, где и когда правильно "извлекать" результат работы операторов,
+     *      поэтому делаю сразу после их создания.
+     *
+     * @return оператор, включающий в себя результат своей работы.
+     */
+    private Statement ifElse() {
+        Expression condition = expression();
+        Statement ifStatement = statement();
+        Statement elseStatement = match(TokenType.ELSE) ? statement() : null;
+        Statement result = new IfStatement(condition, ifStatement, elseStatement);
+        result.execute();
+        return result;
+    }
+
+    /**
+     *  Метод определения оператора присваивания.
      *  Созданный оператор сразу "извлекается", помещая переменную в базу данных.
-     *  Если набор токенов не соответсвует ни одному оператору, исключение.
+     *  Если набор токенов не соответсвует оператору, исключение.
      *
      * @return оператор, включающий в себя результат своей работы.
      */
@@ -39,7 +61,7 @@ public class Parser {
         Token firstOperand = getCurrToken();
         currPos++;
         if (firstOperand.getType() == TokenType.WORD && match(TokenType.EQUAL)){
-            Statement asgStatement = new AssignmentStatement(firstOperand.getData(), expression().calculate());
+            Statement asgStatement = new AssignmentStatement(firstOperand.getData(), expression());
             asgStatement.execute();
             return asgStatement;
         }
@@ -47,7 +69,35 @@ public class Parser {
     }
 
     private Expression expression() {
-        return additive();
+        return condition();
+    }
+
+    /**
+     * Метод создаёт выражение, содержащее некоторое условие.
+     * Приоритет его расчёта ниже, чем у операции сложения.
+     *
+     * @return условный оператор.
+     */
+    private Expression condition() {
+        Expression result = additive();
+
+        while (true) {
+            if (match(TokenType.EQUAL)) {
+                result = new ConditionalExpression('=', result, multiplicative());
+                continue;
+            }
+            if (match(TokenType.LT)) {
+                result = new ConditionalExpression('<', result, multiplicative());
+                continue;
+            }
+            if (match(TokenType.GT)) {
+                result = new ConditionalExpression('>', result, multiplicative());
+                continue;
+            }
+            break;
+        }
+
+        return result;
     }
 
     private Expression additive() {

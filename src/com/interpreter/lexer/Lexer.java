@@ -6,21 +6,20 @@ import com.interpreter.token.TokenType;
 import java.util.ArrayList;
 
 public class Lexer {
-    private static final String ERROR_WRONG_NUMBER = "После числа должен следовать пробел.";
+    private static final String ERROR_WRONG_NUMBER = "После числа должен следовать пробел, конец строки или специальный символ.";
 
     private String input;
     private int length;
     private int currPos = 0;
 
     private final String WORDS_PATTERN = "^[_A-Za-z][_A-Za-z1-9]*$";
-    private final String END_CHAR = " 0\n\r\t";
-    private final String TOKENS_CHAR = "+-*/()=";
+    private final String END_CHAR = " \0\n\r\t";
+    private final String TOKENS_CHAR = "+-*/()=<>";
     private TokenType[] tokenTypes = {
       TokenType.PLUS, TokenType.MINUS,
       TokenType.MULTIPLY, TokenType.DIVISION,
       TokenType.OPEN_BRACKET, TokenType.CLOSE_BRACKET,
-            TokenType.EQUAL,
-            TokenType.WORD
+      TokenType.EQUAL, TokenType.LT, TokenType.GT
     };
 
     private ArrayList<Token> tokens;
@@ -50,7 +49,8 @@ public class Lexer {
     }
 
     /**
-     * Метод добавляет токен типа "слово", если символ, с которого оно начинается,
+     * Метод добавляет соответсвующий токен, если встречено ключевое слово, иначе
+     * метод добавляет токен типа "слово", если символ, с которого оно начинается,
      * удовлетворяет шаблону слова. По окончании цикла, из буфера "Word" удаляется последний символ,
      * который к слову уже не относится. Этот же символ остаётся в currChar, который и возвращает метод.
      *
@@ -65,7 +65,11 @@ public class Lexer {
         }while (word.toString().matches(WORDS_PATTERN));
 
         word.deleteCharAt(word.length()-1);
-        if (word.length() > 0)
+        if (word.toString().equals("if"))
+            addToken(TokenType.IF);
+        else if (word.toString().equals("else"))
+            addToken(TokenType.ELSE);
+        else if (word.length() > 0)
             addToken(TokenType.WORD, word.toString());
         return currChar;
     }

@@ -6,10 +6,14 @@ public enum TokenType {
     MULTIPLY,
     DIVISION,
     EQUAL,
+    LT,
+    GT,
     EOF,
 
     NUMBER,
     WORD,
+    IF,
+    ELSE,
     OPEN_BRACKET,
     CLOSE_BRACKET
 }

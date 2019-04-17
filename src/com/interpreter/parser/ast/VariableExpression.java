@@ -12,4 +12,9 @@ public class VariableExpression implements Expression {
     public double calculate() {
         return data;
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }
