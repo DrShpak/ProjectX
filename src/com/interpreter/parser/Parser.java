@@ -60,7 +60,7 @@ public class Parser {
     private Statement assignmentStatement() {
         Token firstOperand = getCurrToken();
         currPos++;
-        if (firstOperand.getType() == TokenType.WORD && match(TokenType.ASSIGMENT_OPERATOR)) {
+        if (firstOperand.getType() == TokenType.VARIABLE && match(TokenType.ASSIGMENT_OPERATOR)) {
             Statement asgStatement = new AssignmentStatement(firstOperand.getData(), expression());
             asgStatement.execute();
             return asgStatement;
@@ -81,9 +81,42 @@ public class Parser {
     private Expression condition() {
         Expression result = additive();
 
-        while (true) {
+        boolean isTrue = true;
+        while (isTrue) {
+            TokenType type = getCurrToken().getType();
+            switch (type) {
+                case EQUAL:
+                    nextToken();
+                    result = new ConditionalExpression("==", result, multiplicative());
+                    break;
+                case LT:
+                    nextToken();
+                    result = new ConditionalExpression("<", result, multiplicative());
+                    break;
+                case GT:
+                    nextToken();
+                    result = new ConditionalExpression(">", result, multiplicative());
+                    break;
+                case LE:
+                    nextToken();
+                    result = new ConditionalExpression("<=", result, multiplicative());
+                    break;
+                case GE:
+                    nextToken();
+                    result = new ConditionalExpression(">=", result, multiplicative());
+                    break;
+                case NE:
+                    nextToken();
+                    result = new ConditionalExpression("!=", result, multiplicative());
+                    break;
+                default:
+                    isTrue = false;
+                    break;
+            }
+        }
 
-//            switch (TokenType)
+        /*while (true) {
+
             if (match(TokenType.EQUAL)) {
                 result = new ConditionalExpression("==", result, multiplicative());
                 continue;
@@ -97,7 +130,7 @@ public class Parser {
                 continue;
             }
             if (match(TokenType.LE)) {
-                result = new ConditionalExpression(">=", result, multiplicative());
+                result = new ConditionalExpression("<=", result, multiplicative());
                 continue;
             }
             if (match(TokenType.GE)) {
@@ -109,9 +142,12 @@ public class Parser {
                 continue;
             }
             break;
-        }
-
+        }*/
         return result;
+    }
+
+    private void nextToken() {
+        currPos++;
     }
 
     private Expression additive() {
@@ -128,7 +164,6 @@ public class Parser {
             }
             break;
         }
-
         return result;
     }
 
@@ -136,7 +171,6 @@ public class Parser {
         Expression result = unary();
 
         while (true) {
-            // 2 * 6 / 3
             if (match(TokenType.MULTIPLY)) {
                 result = new BinaryExpression('*', result, unary());
                 continue;
@@ -154,9 +188,6 @@ public class Parser {
         if (match(TokenType.MINUS)) {
             return new UnaryExpression('-', primary());
         }
-        if (match(TokenType.PLUS)) {
-            return primary();
-        }
         return primary();
     }
 
@@ -170,7 +201,7 @@ public class Parser {
         /*if (match(TokenType.HEX_NUMBER)) {
             return new NumberExpression(Long.parseLong(current.getData(), 16));
         }*/
-        if (match(TokenType.WORD)) {
+        if (match(TokenType.VARIABLE)) {
             return new VariableExpression(Variables.getValue(current.getData()));
         }
         if (match(TokenType.OPEN_BRACKET)) {
@@ -178,20 +209,21 @@ public class Parser {
             match(TokenType.CLOSE_BRACKET);
             return result;
         }
-        System.out.println("ПЛОХОЙ ТОКЕН = " + current + " position " + currPos) ;
+        System.out.println("ПЛОХОЙ ТОКЕН = " + current + " position " + currPos);
         throw new RuntimeException("Unknown expression");
     }
 
-    private Token consume(TokenType type) {
+    /*private Token consume(TokenType type) {
         Token current = getCurrToken();
         if (type != current.getType()) throw new RuntimeException("Token " + current + " doesn't match " + type);
         currPos++;
         return current;
-    }
+    }*/
 
     /**
      * метод для взятия текущего токена
      * в случае, если вышли за границы списка токенов - выбрасывается исключение
+     *
      * @return текущий токен
      */
     private Token getCurrToken() {

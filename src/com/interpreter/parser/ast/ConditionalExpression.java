@@ -5,12 +5,6 @@ public class ConditionalExpression implements Expression {
     private String operation;
     private Expression exp1, exp2;
 
-    public ConditionalExpression(char operation, Expression exp1, Expression exp2) {
-//        this.operation = operation;
-        this.exp1 = exp1;
-        this.exp2 = exp2;
-    }
-
     public ConditionalExpression(String operation, Expression exp1, Expression exp2) {
         this.operation = operation;
         this.exp1 = exp1;

@@ -6,6 +6,7 @@ public enum TokenType {
     MULTIPLY,
     DIVISION,
     EQUAL,
+    VARIABLE,
     ASSIGMENT_OPERATOR,
     LT, // <
     GT, // >
@@ -15,7 +16,7 @@ public enum TokenType {
     EOF,
 
     NUMBER,
-    WORD,
+//    WORD,
     IF,
     ELSE,
     OPEN_BRACKET,

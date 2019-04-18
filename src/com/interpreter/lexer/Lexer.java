@@ -69,7 +69,7 @@ public class Lexer {
         else if (word.toString().equals("else"))
             addToken(TokenType.ELSE);
         else if (word.length() > 0)
-            addToken(TokenType.WORD, word.toString());
+            addToken(TokenType.VARIABLE, word.toString());
     }
 
     private void tokenizeNumber(char currChar) {
