@@ -173,9 +173,8 @@ public class Parser {
             return new ValueExpression(Long.parseLong(current.getData(), 16));
         }*/
         /*
-        ЧТО ЗА БРЕД, ПОЧЕМУ ЮЗАЕТ getValue - откуда в хэш мэпе лежит КАКАЯ-ТО ПЕРМЕННАЯ???
-        ОТКУДА?????????
-        ГДЕ МЫ ЕЕ ТУДА ДОБАВЛЯЕМ???
+      
+      
          */
         if (match(TokenType.VARIABLE)) {
 //            return new VariableExpression(Variables.getValue(current.getData()));
