@@ -28,26 +28,9 @@ public class Parser {
     private Statement statement() {
         if (match(TokenType.IF))
             return ifElse();
+        if (match(TokenType.PRINT))
+            return new PrintStatement(expression());
         return assignmentStatement();
-    }
-
-    /**
-     * Метод определения условного оператора.
-     * Сначала рассчитывается выражение условия, затем создаётся тело if,
-     * после, если за телом if следует токен типа "ELSE", формируется тело блока else,
-     * иначе ему присваевается null и оно исполняться не будет.
-     * P.S. что-то упустил момент, где и когда правильно "извлекать" результат работы операторов,
-     * поэтому делаю сразу после их создания.
-     *
-     * @return оператор, включающий в себя результат своей работы.
-     */
-    private Statement ifElse() {
-        Expression condition = expression();
-        Statement ifStatement = statement();
-        Statement elseStatement = match(TokenType.ELSE) ? statement() : null;
-        Statement result = new IfStatement(condition, ifStatement, elseStatement);
-        result.execute();
-        return result;
     }
 
     /**
@@ -61,15 +44,36 @@ public class Parser {
         Token firstOperand = getCurrToken();
         currPos++;
         if (firstOperand.getType() == TokenType.VARIABLE && match(TokenType.ASSIGMENT_OPERATOR)) {
-            Statement asgStatement = new AssignmentStatement(firstOperand.getData(), expression());
-            asgStatement.execute();
-            return asgStatement;
+            return new AssignmentStatement(firstOperand.getData(), expression());
+//            asgStatement.execute();
+//            return asgStatement;
         }
         throw new RuntimeException("Unknown statement");
     }
 
+    /**
+     * Метод определения условного оператора.
+     * Сначала рассчитывается выражение условия, затем создаётся тело if,
+     * после, если за телом if следует токен типа "ELSE", формируется тело блока else,
+     * иначе ему присваевается null и оно исполняться не будет.
+     * P.S. что-то упустил момент, где и когда правильно "извлекать" результат работы операторов,
+     * поэтому делаю сразу после их создания.
+     *
+     * @return оператор, включающий в себя результат своей работы.
+     */
+
+    private Statement ifElse() {
+        Expression condition = expression();
+        Statement ifStatement = statement();
+        Statement elseStatement = match(TokenType.ELSE) ? statement() : null;
+//        Statement result = new IfStatement(condition, ifStatement, elseStatement);
+//        result.execute();
+//        return result;
+        return new IfStatement(condition, ifStatement, elseStatement);
+    }
+
     private Expression expression() {
-        return condition();
+        return conditional();
     }
 
     /**
@@ -78,7 +82,7 @@ public class Parser {
      *
      * @return условный оператор.
      */
-    private Expression condition() {
+    private Expression conditional() {
         Expression result = additive();
 
         boolean isTrue = true;
@@ -87,67 +91,34 @@ public class Parser {
             switch (type) {
                 case EQUAL:
                     nextToken();
-                    result = new ConditionalExpression("==", result, multiplicative());
+                    result = new ConditionalExpression("==", result, additive());
                     break;
                 case LT:
                     nextToken();
-                    result = new ConditionalExpression("<", result, multiplicative());
+                    result = new ConditionalExpression("<", result, additive());
                     break;
                 case GT:
                     nextToken();
-                    result = new ConditionalExpression(">", result, multiplicative());
+                    result = new ConditionalExpression(">", result, additive());
                     break;
                 case LE:
                     nextToken();
-                    result = new ConditionalExpression("<=", result, multiplicative());
+                    result = new ConditionalExpression("<=", result, additive());
                     break;
                 case GE:
                     nextToken();
-                    result = new ConditionalExpression(">=", result, multiplicative());
+                    result = new ConditionalExpression(">=", result, additive());
                     break;
                 case NE:
                     nextToken();
-                    result = new ConditionalExpression("!=", result, multiplicative());
+                    result = new ConditionalExpression("!=", result, additive());
                     break;
                 default:
                     isTrue = false;
                     break;
             }
         }
-
-        /*while (true) {
-
-            if (match(TokenType.EQUAL)) {
-                result = new ConditionalExpression("==", result, multiplicative());
-                continue;
-            }
-            if (match(TokenType.LT)) {
-                result = new ConditionalExpression("<", result, multiplicative());
-                continue;
-            }
-            if (match(TokenType.GT)) {
-                result = new ConditionalExpression(">", result, multiplicative());
-                continue;
-            }
-            if (match(TokenType.LE)) {
-                result = new ConditionalExpression("<=", result, multiplicative());
-                continue;
-            }
-            if (match(TokenType.GE)) {
-                result = new ConditionalExpression(">=", result, multiplicative());
-                continue;
-            }
-            if (match(TokenType.NE)) {
-                result = new ConditionalExpression("!=", result, multiplicative());
-                continue;
-            }
-            break;
-        }*/
         return result;
-    }
-
-    private void nextToken() {
-        currPos++;
     }
 
     private Expression additive() {
@@ -196,14 +167,25 @@ public class Parser {
     private Expression primary() {
         Token current = getCurrToken();
         if (match(TokenType.NUMBER)) {
-            return new NumberExpression(Double.parseDouble(current.getData()));
+            return new ValueExpression(Double.parseDouble(current.getData()));
         }
         /*if (match(TokenType.HEX_NUMBER)) {
-            return new NumberExpression(Long.parseLong(current.getData(), 16));
+            return new ValueExpression(Long.parseLong(current.getData(), 16));
         }*/
+        /*
+        ЧТО ЗА БРЕД, ПОЧЕМУ ЮЗАЕТ getValue - откуда в хэш мэпе лежит КАКАЯ-ТО ПЕРМЕННАЯ???
+        ОТКУДА?????????
+        ГДЕ МЫ ЕЕ ТУДА ДОБАВЛЯЕМ???
+         */
         if (match(TokenType.VARIABLE)) {
-            return new VariableExpression(Variables.getValue(current.getData()));
+//            return new VariableExpression(Variables.getValue(current.getData()));
+            return new VariableExpression(current.getData());
         }
+
+        if (match(TokenType.TEXT)) {
+            return new ValueExpression(current.getData());
+        }
+
         if (match(TokenType.OPEN_BRACKET)) {
             Expression result = expression();
             match(TokenType.CLOSE_BRACKET);
@@ -230,6 +212,10 @@ public class Parser {
         if (currPos >= tokens.size())
             return EOF;
         return tokens.get(currPos);
+    }
+
+    private void nextToken() {
+        currPos++;
     }
 
     private boolean match(TokenType type) {

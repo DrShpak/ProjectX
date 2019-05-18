@@ -13,10 +13,12 @@ public class IfStatement implements Statement {
 
     @Override
     public void execute() {
-        if (conditional.calculate() == 1)
+        double result = conditional.calculate().asDouble();
+        if (result != 0) {
             ifStatement.execute();
-        else if (elseStatement != null)
+        } else if (elseStatement != null) {
             elseStatement.execute();
+        }
     }
 
     @Override

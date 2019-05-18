@@ -15,10 +15,19 @@ public enum TokenType {
     NE, // NotEqual !=
     EOF,
 
-    NUMBER,
-//    WORD,
     IF,
     ELSE,
     OPEN_BRACKET,
-    CLOSE_BRACKET
+    CLOSE_BRACKET,
+
+    BAR,
+    BARBAR,
+    AMP,
+    AMPAMP,
+
+
+    //kew words
+    NUMBER,
+    PRINT,
+    TEXT
 }

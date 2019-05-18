@@ -1,5 +1,8 @@
 package com.interpreter.parser.ast;
 
+import com.interpreter.parser.variables.NumberValue;
+import com.interpreter.parser.variables.Value;
+
 public class UnaryExpression implements Expression {
 
     private char operation;
@@ -11,14 +14,11 @@ public class UnaryExpression implements Expression {
     }
 
     @Override
-    public double calculate(){
-        switch (operation) {
-            case '-':
-                return -exp1.calculate();
-            case '+':
-            default:
-                return exp1.calculate();
+    public Value calculate(){
+        if (operation == '-') {
+            return new NumberValue(-exp1.calculate().asDouble());
         }
+        return new NumberValue(exp1.calculate().asDouble());
     }
 
     @Override

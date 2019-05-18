@@ -1,0 +1,5 @@
+a = 10
+b = 20
+word = 4
+if a < b print "ебать блять" + "\n" else print b
+print "word = " + word

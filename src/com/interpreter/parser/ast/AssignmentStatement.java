@@ -2,7 +2,7 @@ package com.interpreter.parser.ast;
 
 import com.interpreter.parser.variables.Variables;
 
-public class AssignmentStatement implements Statement{
+public class AssignmentStatement implements Statement {
 
     private String variableName;
     private Expression value;
@@ -10,6 +10,7 @@ public class AssignmentStatement implements Statement{
     public AssignmentStatement(String variableName, Expression value) {
         this.variableName = variableName;
         this.value = value;
+//        Variables.addVariable(variableName, value.calculate());
     }
 
     @Override
