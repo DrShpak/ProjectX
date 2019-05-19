@@ -10,7 +10,6 @@ public class AssignmentStatement implements Statement {
     public AssignmentStatement(String variableName, Expression value) {
         this.variableName = variableName;
         this.value = value;
-//        Variables.addVariable(variableName, value.calculate());
     }
 
     @Override

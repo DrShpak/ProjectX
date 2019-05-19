@@ -17,12 +17,6 @@ public class Lexer {
     private final String WORDS_PATTERN = "^[_A-Za-z][_A-Za-z0-9]*$";
     private final String END_CHAR = " \0\n\r\t";
     private final String TOKENS_CHAR = "+-*/()=<>!&|!{};";
-    /*private TokenType[] tokenTypes = {
-            TokenType.PLUS, TokenType.MINUS,
-            TokenType.MULTIPLY, TokenType.DIVISION,
-            TokenType.OPEN_BRACKET, TokenType.CLOSE_BRACKET,
-            TokenType.ASSIGMENT_OPERATOR, TokenType.LT, TokenType.GT
-    };*/
 
     private static final Map<String, TokenType> OPERATORS;
     static {

@@ -1,6 +1,7 @@
 package com.interpreter.parser;
 
 import com.interpreter.parser.ast.*;
+import com.interpreter.parser.variables.Variables;
 import com.interpreter.token.Token;
 import com.interpreter.token.TokenType;
 
@@ -75,9 +76,6 @@ public class Parser {
      * @return оператор, включающий в себя результат своей работы.
      */
 
-    /*
-    условная конструкция
-     */
     private Statement ifElse() {
         Expression condition = expression();
         Statement ifStatement = statementOrBlock();
@@ -85,10 +83,6 @@ public class Parser {
         return new IfStatement(condition, ifStatement, elseStatement);
     }
 
-    /**
-     * цикл  while
-     * @return оператор цикла while
-     */
     private Statement whileStatement() {
         Expression condition = expression();
         Statement statement = statementOrBlock();
@@ -236,7 +230,11 @@ public class Parser {
         if (match(TokenType.NUMBER)) {
             return new ValueExpression(Double.parseDouble(current.getData()));
         }
-
+        /*if (match(TokenType.HEX_NUMBER)) {
+            return new ValueExpression(Long.parseLong(current.getData(), 16));
+        }*/
+        /*
+         */
         if (match(TokenType.VARIABLE)) {
 //            return new VariableExpression(Variables.getValue(current.getData()));
             return new VariableExpression(current.getData());
