@@ -1,7 +1,6 @@
 package com.interpreter.parser;
 
 import com.interpreter.parser.ast.*;
-import com.interpreter.parser.variables.Variables;
 import com.interpreter.token.Token;
 import com.interpreter.token.TokenType;
 
@@ -17,12 +16,27 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    public ArrayList<Statement> parse() {
-        ArrayList<Statement> result = new ArrayList<>();
+    public Statement parse() {
+        BlockStatement result = new BlockStatement();
         while (!match(TokenType.EOF)) {
             result.add(statement());
         }
         return result;
+    }
+
+    private Statement block() {
+        BlockStatement block = new BlockStatement();
+        consume(TokenType.LBRACE);
+        while (!match(TokenType.RBRACE)) {
+            block.add(statement());
+        }
+        return block;
+    }
+
+    private Statement statementOrBlock() {
+        if (getCurrToken().getType() == TokenType.LBRACE)
+            return block();
+        return statement();
     }
 
     private Statement statement() {
@@ -30,6 +44,10 @@ public class Parser {
             return ifElse();
         if (match(TokenType.PRINT))
             return new PrintStatement(expression());
+        if (match(TokenType.WHILE))
+            return whileStatement();
+        if (match(TokenType.FOR))
+            return forStatement();
         return assignmentStatement();
     }
 
@@ -45,8 +63,6 @@ public class Parser {
         currPos++;
         if (firstOperand.getType() == TokenType.VARIABLE && match(TokenType.ASSIGMENT_OPERATOR)) {
             return new AssignmentStatement(firstOperand.getData(), expression());
-//            asgStatement.execute();
-//            return asgStatement;
         }
         throw new RuntimeException("Unknown statement");
     }
@@ -56,24 +72,83 @@ public class Parser {
      * Сначала рассчитывается выражение условия, затем создаётся тело if,
      * после, если за телом if следует токен типа "ELSE", формируется тело блока else,
      * иначе ему присваевается null и оно исполняться не будет.
-     * P.S. что-то упустил момент, где и когда правильно "извлекать" результат работы операторов,
-     * поэтому делаю сразу после их создания.
-     *
      * @return оператор, включающий в себя результат своей работы.
      */
 
+    /*
+    условная конструкция
+     */
     private Statement ifElse() {
         Expression condition = expression();
-        Statement ifStatement = statement();
-        Statement elseStatement = match(TokenType.ELSE) ? statement() : null;
-//        Statement result = new IfStatement(condition, ifStatement, elseStatement);
-//        result.execute();
-//        return result;
+        Statement ifStatement = statementOrBlock();
+        Statement elseStatement = match(TokenType.ELSE) ? statementOrBlock() : null;
         return new IfStatement(condition, ifStatement, elseStatement);
     }
 
+    /**
+     * цикл  while
+     * @return оператор цикла while
+     */
+    private Statement whileStatement() {
+        Expression condition = expression();
+        Statement statement = statementOrBlock();
+        return new WhileStatement(condition, statement);
+    }
+
+    private Statement forStatement() {
+        Statement initialization = assignmentStatement();
+        consume(TokenType.SEPARATOR);
+        Expression termination = expression();
+        consume(TokenType.SEPARATOR);
+        Statement increment = assignmentStatement();
+        Statement statement = statementOrBlock();
+        return new ForStatement(initialization, termination, increment, statement);
+    }
+
     private Expression expression() {
-        return conditional();
+        return logicalOr();
+    }
+
+    private Expression logicalOr() {
+        Expression result = logicalAnd();
+
+        while (true) {
+            if (match(TokenType.BARBAR)) {
+                result = new ConditionalExpression(ConditionalExpression.Operator.OR, result, logicalAnd());
+                continue;
+            }
+            break;
+        }
+
+        return result;
+    }
+
+    private Expression logicalAnd() {
+        Expression result = equality();
+
+        while (true) {
+            if (match(TokenType.AMPAMP)) {
+                result = new ConditionalExpression(ConditionalExpression.Operator.AND, result, equality());
+                continue;
+            }
+            break;
+        }
+
+        return result;
+    }
+
+    private Expression equality() {
+        Expression result = conditional();
+
+        if (match(TokenType.EQUAL)) {
+            return new ConditionalExpression(ConditionalExpression.Operator.EQUAL, result, conditional());
+        }
+
+        if (match(TokenType.NE)) {
+            return new ConditionalExpression(ConditionalExpression.Operator.NE, result, conditional());
+        }
+
+        return result;
     }
 
     /**
@@ -89,29 +164,21 @@ public class Parser {
         while (isTrue) {
             TokenType type = getCurrToken().getType();
             switch (type) {
-                case EQUAL:
-                    nextToken();
-                    result = new ConditionalExpression("==", result, additive());
-                    break;
                 case LT:
                     nextToken();
-                    result = new ConditionalExpression("<", result, additive());
+                    result = new ConditionalExpression(ConditionalExpression.Operator.LT, result, additive());
                     break;
                 case GT:
                     nextToken();
-                    result = new ConditionalExpression(">", result, additive());
+                    result = new ConditionalExpression(ConditionalExpression.Operator.GT, result, additive());
                     break;
                 case LE:
                     nextToken();
-                    result = new ConditionalExpression("<=", result, additive());
+                    result = new ConditionalExpression(ConditionalExpression.Operator.LE, result, additive());
                     break;
                 case GE:
                     nextToken();
-                    result = new ConditionalExpression(">=", result, additive());
-                    break;
-                case NE:
-                    nextToken();
-                    result = new ConditionalExpression("!=", result, additive());
+                    result = new ConditionalExpression(ConditionalExpression.Operator.GE, result, additive());
                     break;
                 default:
                     isTrue = false;
@@ -169,14 +236,7 @@ public class Parser {
         if (match(TokenType.NUMBER)) {
             return new ValueExpression(Double.parseDouble(current.getData()));
         }
-        /*if (match(TokenType.HEX_NUMBER)) {
-            return new ValueExpression(Long.parseLong(current.getData(), 16));
-        }*/
-        /*
-        ЧТО ЗА БРЕД, ПОЧЕМУ ЮЗАЕТ getValue - откуда в хэш мэпе лежит КАКАЯ-ТО ПЕРМЕННАЯ???
-        ОТКУДА?????????
-        ГДЕ МЫ ЕЕ ТУДА ДОБАВЛЯЕМ???
-         */
+
         if (match(TokenType.VARIABLE)) {
 //            return new VariableExpression(Variables.getValue(current.getData()));
             return new VariableExpression(current.getData());
@@ -195,12 +255,12 @@ public class Parser {
         throw new RuntimeException("Unknown expression");
     }
 
-    /*private Token consume(TokenType type) {
+    private Token consume(TokenType type) {
         Token current = getCurrToken();
         if (type != current.getType()) throw new RuntimeException("Token " + current + " doesn't match " + type);
         currPos++;
         return current;
-    }*/
+    }
 
     /**
      * метод для взятия текущего токена

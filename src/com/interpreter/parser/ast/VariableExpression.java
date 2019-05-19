@@ -13,10 +13,6 @@ public class VariableExpression implements Expression {
         this.varName = varName;
     }
 
-//    public VariableExpression(double data) {
-//        this.value = new NumberValue(data);
-//    }
-
     @Override
     public Value calculate() {
         if (!Variables.isExists(varName))

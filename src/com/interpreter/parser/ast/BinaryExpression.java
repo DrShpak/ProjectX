@@ -25,14 +25,18 @@ public class BinaryExpression implements Expression {
             switch (operation) {
                 case '*': {
                     final int iterations = (int) value2.asDouble();
-                    final StringBuilder builder = new StringBuilder();
-                    builder.append(String.valueOf(string1).repeat(Math.max(0, iterations)));
-                    return new StringValue(builder.toString());
+                    return new StringValue(String.valueOf(string1).repeat(Math.max(0, iterations)));
                 }
                 case '+': {
                     return new StringValue(string1 + string2);
                 }
 
+            }
+        } else if (value2 instanceof StringValue) {
+            if (operation == '+') {
+                final String string1 = value1.asString();
+                final String string2 = value2.asString();
+                return new StringValue(string1 + string2);
             }
         }
 

@@ -16,13 +16,13 @@ public class Lexer {
 
     private final String WORDS_PATTERN = "^[_A-Za-z][_A-Za-z0-9]*$";
     private final String END_CHAR = " \0\n\r\t";
-    private final String TOKENS_CHAR = "+-*/()=<>!";
-    private TokenType[] tokenTypes = {
+    private final String TOKENS_CHAR = "+-*/()=<>!&|!{};";
+    /*private TokenType[] tokenTypes = {
             TokenType.PLUS, TokenType.MINUS,
             TokenType.MULTIPLY, TokenType.DIVISION,
             TokenType.OPEN_BRACKET, TokenType.CLOSE_BRACKET,
             TokenType.ASSIGMENT_OPERATOR, TokenType.LT, TokenType.GT
-    };
+    };*/
 
     private static final Map<String, TokenType> OPERATORS;
     static {
@@ -31,17 +31,28 @@ public class Lexer {
         OPERATORS.put("-", TokenType.MINUS);
         OPERATORS.put("*", TokenType.MULTIPLY);
         OPERATORS.put("/", TokenType.DIVISION);
+
         OPERATORS.put("(", TokenType.OPEN_BRACKET);
         OPERATORS.put(")", TokenType.CLOSE_BRACKET);
-        OPERATORS.put("==", TokenType.EQUAL);
+        OPERATORS.put("{", TokenType.LBRACE);
+        OPERATORS.put("}", TokenType.RBRACE);
+
+        OPERATORS.put("=", TokenType.ASSIGMENT_OPERATOR);
         OPERATORS.put("<", TokenType.LT);
         OPERATORS.put(">", TokenType.GT);
+
+        OPERATORS.put("!", TokenType.EXCL);
+        OPERATORS.put("&", TokenType.AMP);
+        OPERATORS.put("|", TokenType.BAR);
+
+        OPERATORS.put("==", TokenType.EQUAL);
         OPERATORS.put("<=", TokenType.LE);
         OPERATORS.put(">=", TokenType.GE);
         OPERATORS.put("!=", TokenType.NE);
         OPERATORS.put("&&", TokenType.AMPAMP);
         OPERATORS.put("||", TokenType.BARBAR);
 
+        OPERATORS.put(";", TokenType.SEPARATOR);
     }
 
     private ArrayList<Token> tokens;
@@ -56,8 +67,8 @@ public class Lexer {
         char currChar = getCurrChar();
         while (currPos < length) {
             if (TOKENS_CHAR.indexOf(currChar) != -1) {
-                tokenizeOperator(currChar);
-                currChar = nextChar();
+                tokenizeOperator();
+                currChar = getCurrChar();
             } else if (Character.isDigit(currChar)) {
                 tokenizeNumber(currChar);
                 currChar = getCurrChar();
@@ -118,6 +129,10 @@ public class Lexer {
             addToken(TokenType.ELSE);
         else if (word.toString().equals("print"))
             addToken(TokenType.PRINT);
+        else if (word.toString().equals("while"))
+            addToken(TokenType.WHILE);
+        else if (word.toString().equals("for"))
+            addToken(TokenType.FOR);
         else if (word.length() > 0)
             addToken(TokenType.VARIABLE, word.toString());
     }
@@ -136,32 +151,53 @@ public class Lexer {
         addToken(TokenType.NUMBER, buffer.toString());
     }
 
-    private void tokenizeOperator(char currChar) {
-        if (currChar == '=' && nextChar() == '=') {
-            currPos++;
-            addToken(TokenType.EQUAL);
-            return;
+    private void tokenizeOperator() {
+        char current = peek(0);
+        if (current == '/') {
+            if (peek(1) == '/') {
+                nextChar();
+                nextChar();
+                tokenizeComment();
+                return;
+            } else if (peek(1) == '*') {
+                nextChar();
+                nextChar();
+                tokenizeMultilineComment();
+                return;
+            }
         }
 
-        if (currChar == '<' && nextChar() == '=') {
-            currPos++;
-            addToken(TokenType.LE);
-            return;
+        final StringBuilder buffer = new StringBuilder();
+        while (true) {
+            final String operator = buffer.toString();
+            if (!OPERATORS.containsKey(operator + current) && !operator.isEmpty()) {
+                addToken(OPERATORS.get(operator));
+                return;
+            }
+            buffer.append(current);
+            current = nextChar();
         }
-
-        if (currChar == '>' && nextChar() == '=') {
-            currPos++;
-            addToken(TokenType.GE);
-            return;
-        }
-
-        if (currChar == '!' && nextChar() == '=') {
-            currPos++;
-            addToken(TokenType.NE);
-            return;
-        }
-        addToken(tokenTypes[TOKENS_CHAR.indexOf(currChar)]);
     }
+
+    private void tokenizeMultilineComment() {
+        while (true) {
+            if (peek(0) == '\0')
+                throw new RuntimeException("Missing close tag");
+            if (peek(0) == '*' && peek(1) == '/')
+                break;
+            nextChar();
+        }
+
+        nextChar(); // /
+        nextChar(); // *
+    }
+
+    private void tokenizeComment() {
+        while ("\r\n\0".indexOf(getCurrChar()) == -1) {
+            nextChar();
+        }
+    }
+
 
     /**
      * взятие текущего символа
@@ -172,6 +208,12 @@ public class Lexer {
         if (currPos >= length)
             return '\0';
         return input.charAt(currPos);
+    }
+
+    private char peek(int relativePos) {
+        if (currPos >= length)
+            return '\0';
+        return input.charAt(currPos + relativePos);
     }
 
     private char nextChar() {

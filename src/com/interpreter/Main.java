@@ -29,22 +29,24 @@ public class Main {
         }*/
 
         Parser parser = new Parser(tokens);
-        ArrayList<Statement> statements = parser.parse();
-        for (Statement statement : statements) {
-            System.out.print(statement);
-            System.out.println();
-        }
-
-        for (Statement statement : statements) {
-            statement.execute();
-        }
+        Statement program = parser.parse();
+//        System.out.println(program.toString());
+        program.execute();
+//        for (Statement statement : statements) {
+//            System.out.print(statement);
+//            System.out.println();
+//        }
+//
+//        for (Statement statement : statements) {
+//            statement.execute();
+//        }
 
         Set<Map.Entry<String, Value>> set = Variables.getVariables().entrySet();
         for (Map.Entry<String, Value> entry : Variables.getVariables().entrySet()) {
 //            System.out.println(Variables.getVariables().get(entry.getKey()));
         }
 
-        System.out.println("\na = " + Variables.getValue("a"));
+//        System.out.println("\na = " + Variables.getValue("a"));
 //        System.out.println("var2 = " + Variables.getValue("var2"));
 //        System.out.println("i = " + Variables.getValue("i"));
     }

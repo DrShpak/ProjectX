@@ -13,21 +13,30 @@ public enum TokenType {
     LE, // <=
     GE, // >=
     NE, // NotEqual !=
+    EXCL,
     EOF,
 
     IF,
     ELSE,
-    OPEN_BRACKET,
-    CLOSE_BRACKET,
+
+    OPEN_BRACKET, // (
+    CLOSE_BRACKET, // )
+    LBRACE, // {
+    RBRACE, // }
+
 
     BAR,
     BARBAR,
     AMP,
     AMPAMP,
 
+    WHILE,
+    FOR,
 
     //kew words
     NUMBER,
     PRINT,
-    TEXT
+    TEXT,
+
+    SEPARATOR // ; для цилка for
 }

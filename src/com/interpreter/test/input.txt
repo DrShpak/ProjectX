@@ -1,5 +1,33 @@
-a = 10
-b = 20
-word = 4
-if a < b print "ебать блять" + "\n" else print b
-print "word = " + word
+//a = 10
+//b = 20
+//if (a < 10 || b == 21) print "ok" else print "ne ok"
+/*if (40 < 50 && 50 < 60) {
+    print "true1\n"
+    print "true2\n"
+    i = 0
+    while (i < 10) {
+        print "i = " + i + "\n"
+        i = i + 1
+    }
+    if (1) print "true3\n"
+    if (0) print "false2\n"
+    else {
+        print "what\n"
+        print "what2\n"
+    }
+}
+else print "false"*/
+
+/*i = 0
+while (i < 10) {
+print i + "\n"
+i = i + 1
+}*/
+
+for i = 0; i < 10; i = i + 1 {
+print "hello\n"
+}
+
+//word = 4
+//print word + "\n"
+
