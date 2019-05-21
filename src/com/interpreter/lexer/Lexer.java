@@ -8,15 +8,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Lexer {
+
     private static final String ERROR_WRONG_NUMBER = "После числа должен следовать пробел, конец строки или специальный символ.";
 
     private String input;
     private int length;
     private int currPos = 0;
 
-    private final String WORDS_PATTERN = "^[_A-Za-z][_A-Za-z0-9]*$";
+//    private final String WORDS_PATTERN = "^[_A-Za-z][_A-Za-z0-9]*$";
+    private final String WORDS_PATTERN = "[A-Za-z]+";
     private final String END_CHAR = " \0\n\r\t";
-    private final String TOKENS_CHAR = "+-*/()=<>!&|!{};";
+    private final String TOKENS_CHAR = "+-*/()=<>!&|!{};,";
 
     private static final Map<String, TokenType> OPERATORS;
     static {
@@ -47,6 +49,7 @@ public class Lexer {
         OPERATORS.put("||", TokenType.BARBAR);
 
         OPERATORS.put(";", TokenType.SEPARATOR);
+        OPERATORS.put(",", TokenType.COMMA);
     }
 
     private ArrayList<Token> tokens;
@@ -73,6 +76,7 @@ public class Lexer {
 
             else {
                 tokenizeWord(currChar);
+//                currPos--;
                 currChar = getCurrChar();
             }
         }
@@ -127,8 +131,18 @@ public class Lexer {
             addToken(TokenType.WHILE);
         else if (word.toString().equals("for"))
             addToken(TokenType.FOR);
+        else if (word.toString().equals("break"))
+            addToken(TokenType.BREAK);
+        else if (word.toString().equals("continue"))
+            addToken(TokenType.CONTINUE);
+        else if (word.toString().equals("def"))
+            addToken(TokenType.DEF);
+        else if (word.toString().equals("return"))
+            addToken(TokenType.RETURN);
         else if (word.length() > 0)
             addToken(TokenType.VARIABLE, word.toString());
+        if (word.toString().length() != 0)
+            currPos--;
     }
 
     private void tokenizeNumber(char currChar) {

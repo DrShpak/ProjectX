@@ -32,11 +32,17 @@ public enum TokenType {
 
     WHILE,
     FOR,
+    BREAK,
+    CONTINUE,
+
+    DEF,
+    RETURN,
 
     //kew words
     NUMBER,
     PRINT,
     TEXT,
 
-    SEPARATOR // ; для цилка for
+    SEPARATOR,
+    COMMA// ; для цилка for
 }

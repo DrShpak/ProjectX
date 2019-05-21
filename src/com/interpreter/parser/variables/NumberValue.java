@@ -2,6 +2,7 @@ package com.interpreter.parser.variables;
 
 public class NumberValue implements Value {
 
+    public static final NumberValue ZERO = new NumberValue(0);
     private double value;
 
     public NumberValue(boolean value) {

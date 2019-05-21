@@ -5,6 +5,7 @@ import com.interpreter.token.Token;
 import com.interpreter.token.TokenType;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Parser {
 
@@ -48,6 +49,17 @@ public class Parser {
             return whileStatement();
         if (match(TokenType.FOR))
             return forStatement();
+        if (match(TokenType.BREAK))
+            return new BreakStatement();
+        if (match(TokenType.CONTINUE))
+            return new ContinueStatement();
+        if (match(TokenType.RETURN))
+            return new ReturnStatement(expression());
+        if (match(TokenType.DEF))
+            return functionDefine();
+        if (getCurrToken(0).getType() == TokenType.VARIABLE && getCurrToken(1).getType() == TokenType.OPEN_BRACKET) {
+            return new FunctionStatement(function());
+        }
         return assignmentStatement();
     }
 
@@ -96,6 +108,30 @@ public class Parser {
         Statement increment = assignmentStatement();
         Statement statement = statementOrBlock();
         return new ForStatement(initialization, termination, increment, statement);
+    }
+
+    private FunctionDefine functionDefine() {
+        String name = consume(TokenType.VARIABLE).getData();
+        consume(TokenType.OPEN_BRACKET);
+        List<String> args = new ArrayList<>();
+        while (!match(TokenType.CLOSE_BRACKET)) {
+            args.add(consume(TokenType.VARIABLE).getData());
+            match(TokenType.COMMA);
+        }
+
+        Statement body = statementOrBlock();
+        return new FunctionDefine(name, args, body);
+    }
+
+    private FunctionalExpression function() {
+        String name = consume(TokenType.VARIABLE).getData();
+        consume(TokenType.OPEN_BRACKET);
+        FunctionalExpression function = new FunctionalExpression(name);
+        while (!match(TokenType.CLOSE_BRACKET)) {
+            function.addArgs(expression());
+            match(TokenType.COMMA);
+        }
+        return function;
     }
 
     private Expression expression() {
@@ -230,6 +266,10 @@ public class Parser {
             return new ValueExpression(Double.parseDouble(current.getData()));
         }
 
+        if (getCurrToken(0).getType() == TokenType.VARIABLE && getCurrToken(1).getType() == TokenType.OPEN_BRACKET) {
+            return function();
+        }
+
         if (match(TokenType.VARIABLE)) {
 //            return new VariableExpression(Variables.getValue(current.getData()));
             return new VariableExpression(current.getData());
@@ -265,6 +305,12 @@ public class Parser {
         if (currPos >= tokens.size())
             return EOF;
         return tokens.get(currPos);
+    }
+
+    private Token getCurrToken(int relativePos) {
+        if (currPos + relativePos >= tokens.size())
+            return EOF;
+        return tokens.get(currPos + relativePos);
     }
 
     private void nextToken() {

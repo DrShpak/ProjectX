@@ -1,14 +1,28 @@
 package com.interpreter.parser.variables;
 
 import java.util.HashMap;
+//import java.util.Map;
+import java.util.Stack;
 
 public class Variables {
 
     private static final NumberValue ZERO = new NumberValue(0);
     private static HashMap<String, Value> variables = new HashMap<>();
 
+    //стэк для хранения переменных, которые являются аргументами функций
+    private static Stack<HashMap<String, Value>> stack = new Stack<>();
+
     public static HashMap<String, Value> getVariables() {
         return variables;
+    }
+
+    //передаеём копию, чтобы сохранить исходные значения
+    public static void push() {
+        stack.push(new HashMap<>(variables));
+    }
+
+    public static void pop() {
+        variables = stack.pop();
     }
 
     public static boolean isExists(String varName) {
